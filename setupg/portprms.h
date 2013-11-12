@@ -47,7 +47,7 @@ namespace SetupApp {
       void Set(int i, PortParams ^port) { ports[i] = port; }
       bool IsEmpty() { return ports[0]->Count == 0 && ports[1]->Count == 0; }
 
-    private:
+    /*private:*/
       array<PortParams ^> ^ports;
   };
 

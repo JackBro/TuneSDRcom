@@ -57,6 +57,7 @@ namespace SetupApp {
 	using namespace System::Windows::Forms;
 	using namespace System::Data;
 	using namespace System::Drawing;
+	using namespace System::Threading;
 
 	/// <summary>
 	/// Summary for Form1
@@ -76,6 +77,8 @@ namespace SetupApp {
 			//
 			//TODO: Add the constructor code here
 			//
+			RC_isConnected=false;
+			PSDR_isConnected=false;
 		}
 
 	protected:
@@ -90,6 +93,7 @@ namespace SetupApp {
 			}
 		}
 
+#pragma region Form components init
     private: System::Windows::Forms::TextBox^  PortNameB;
     private: System::Windows::Forms::TextBox^  PortNameA;
     private: System::Windows::Forms::PictureBox^  picturePinMap;
@@ -134,13 +138,31 @@ namespace SetupApp {
     private: System::Windows::Forms::Label^  pinNameB_RX;
     private: System::Windows::Forms::CheckBox^  UsePortsClassB;
     private: System::Windows::Forms::CheckBox^  UsePortsClassA;
-    private: System::Windows::Forms::TreeView^  pairList;
+
+
+
+
+	private: System::Windows::Forms::Panel^  panel1;
+
+	private: System::Windows::Forms::TextBox^  textBox1;
+	private: System::IO::Ports::SerialPort^  serialRC;
+	private: System::IO::Ports::SerialPort^  serialPSDR;
+	private: System::Windows::Forms::ComboBox^  comboBox1;
+	private: System::Windows::Forms::CheckBox^  checkBoxPSDR;
+	private: System::Windows::Forms::CheckBox^  checkBoxRC;
+	private: System::Windows::Forms::Timer^  timerOpenPorts;
+	private: System::Windows::Forms::Timer^  timerReadRC;
+	private: System::Windows::Forms::NotifyIcon^  notifyIcon;
+	private: System::Windows::Forms::Label^  label1;
+	private: System::Windows::Forms::Button^  buttonConnect;
+
+	private: System::Windows::Forms::TreeView^  pairList;
 
 	private:
 		/// <summary>
 		/// Required designer variable.
 		/// </summary>
-
+#pragma endregion
 
 #pragma region Windows Form Designer generated code
 		/// <summary>
@@ -149,417 +171,509 @@ namespace SetupApp {
 		/// </summary>
 		void InitializeComponent(void)
 		{
-          this->components = (gcnew System::ComponentModel::Container());
-          System::ComponentModel::ComponentResourceManager^  resources = (gcnew System::ComponentModel::ComponentResourceManager(Form1::typeid));
-          this->PortNameB = (gcnew System::Windows::Forms::TextBox());
-          this->PortNameA = (gcnew System::Windows::Forms::TextBox());
-          this->UsePortsClassB = (gcnew System::Windows::Forms::CheckBox());
-          this->UsePortsClassA = (gcnew System::Windows::Forms::CheckBox());
-          this->pinNameON = (gcnew System::Windows::Forms::Label());
-          this->picturePinMap = (gcnew System::Windows::Forms::PictureBox());
-          this->toolTip1 = (gcnew System::Windows::Forms::ToolTip(this->components));
-          this->EmuBrB = (gcnew System::Windows::Forms::CheckBox());
-          this->EmuOverrunB = (gcnew System::Windows::Forms::CheckBox());
-          this->PlugInModeB = (gcnew System::Windows::Forms::CheckBox());
-          this->ExclusiveModeB = (gcnew System::Windows::Forms::CheckBox());
-          this->ExclusiveModeA = (gcnew System::Windows::Forms::CheckBox());
-          this->PlugInModeA = (gcnew System::Windows::Forms::CheckBox());
-          this->EmuOverrunA = (gcnew System::Windows::Forms::CheckBox());
-          this->EmuBrA = (gcnew System::Windows::Forms::CheckBox());
-          this->HiddenModeA = (gcnew System::Windows::Forms::CheckBox());
-          this->HiddenModeB = (gcnew System::Windows::Forms::CheckBox());
-          this->pinNameA_RX = (gcnew System::Windows::Forms::Label());
-          this->pinNameA_DTR = (gcnew System::Windows::Forms::Label());
-          this->pinNameA_TX = (gcnew System::Windows::Forms::Label());
-          this->pinNameA_DSR = (gcnew System::Windows::Forms::Label());
-          this->pinNameA_DCD = (gcnew System::Windows::Forms::Label());
-          this->pinNameA_RTS = (gcnew System::Windows::Forms::Label());
-          this->pinNameA_CTS = (gcnew System::Windows::Forms::Label());
-          this->pinNameA_RI = (gcnew System::Windows::Forms::Label());
-          this->pinNameA_OUT1 = (gcnew System::Windows::Forms::Label());
-          this->pinNameA_OUT2 = (gcnew System::Windows::Forms::Label());
-          this->pinNameA_OPEN = (gcnew System::Windows::Forms::Label());
-          this->pinNameB_OPEN = (gcnew System::Windows::Forms::Label());
-          this->pinNameB_OUT1 = (gcnew System::Windows::Forms::Label());
-          this->pinNameB_OUT2 = (gcnew System::Windows::Forms::Label());
-          this->pinNameB_RI = (gcnew System::Windows::Forms::Label());
-          this->pinNameB_CTS = (gcnew System::Windows::Forms::Label());
-          this->pinNameB_RTS = (gcnew System::Windows::Forms::Label());
-          this->pinNameB_DCD = (gcnew System::Windows::Forms::Label());
-          this->pinNameB_DSR = (gcnew System::Windows::Forms::Label());
-          this->pinNameB_TX = (gcnew System::Windows::Forms::Label());
-          this->pinNameB_DTR = (gcnew System::Windows::Forms::Label());
-          this->pinNameB_RX = (gcnew System::Windows::Forms::Label());
-          this->pairList = (gcnew System::Windows::Forms::TreeView());
-          this->buttonRemovePair = (gcnew System::Windows::Forms::Button());
-          this->buttonAddPair = (gcnew System::Windows::Forms::Button());
-          this->buttonApply = (gcnew System::Windows::Forms::Button());
-          this->buttonReset = (gcnew System::Windows::Forms::Button());
-          (cli::safe_cast<System::ComponentModel::ISupportInitialize^  >(this->picturePinMap))->BeginInit();
-          this->SuspendLayout();
-          // 
-          // PortNameB
-          // 
-          resources->ApplyResources(this->PortNameB, L"PortNameB");
-          this->PortNameB->Name = L"PortNameB";
-          this->toolTip1->SetToolTip(this->PortNameB, resources->GetString(L"PortNameB.ToolTip"));
-          this->PortNameB->TextChanged += gcnew System::EventHandler(this, &Form1::PortNameB_Changed);
-          // 
-          // PortNameA
-          // 
-          resources->ApplyResources(this->PortNameA, L"PortNameA");
-          this->PortNameA->Name = L"PortNameA";
-          this->toolTip1->SetToolTip(this->PortNameA, resources->GetString(L"PortNameA.ToolTip"));
-          this->PortNameA->TextChanged += gcnew System::EventHandler(this, &Form1::PortNameA_Changed);
-          // 
-          // UsePortsClassB
-          // 
-          resources->ApplyResources(this->UsePortsClassB, L"UsePortsClassB");
-          this->UsePortsClassB->Name = L"UsePortsClassB";
-          this->toolTip1->SetToolTip(this->UsePortsClassB, resources->GetString(L"UsePortsClassB.ToolTip"));
-          this->UsePortsClassB->UseVisualStyleBackColor = true;
-          this->UsePortsClassB->CheckedChanged += gcnew System::EventHandler(this, &Form1::UsePortsClassB_Changed);
-          // 
-          // UsePortsClassA
-          // 
-          resources->ApplyResources(this->UsePortsClassA, L"UsePortsClassA");
-          this->UsePortsClassA->Name = L"UsePortsClassA";
-          this->toolTip1->SetToolTip(this->UsePortsClassA, resources->GetString(L"UsePortsClassA.ToolTip"));
-          this->UsePortsClassA->UseVisualStyleBackColor = true;
-          this->UsePortsClassA->CheckedChanged += gcnew System::EventHandler(this, &Form1::UsePortsClassA_Changed);
-          // 
-          // pinNameON
-          // 
-          resources->ApplyResources(this->pinNameON, L"pinNameON");
-          this->pinNameON->Name = L"pinNameON";
-          this->toolTip1->SetToolTip(this->pinNameON, resources->GetString(L"pinNameON.ToolTip"));
-          // 
-          // picturePinMap
-          // 
-          this->picturePinMap->BackColor = System::Drawing::SystemColors::Control;
-          this->picturePinMap->Cursor = System::Windows::Forms::Cursors::Hand;
-          resources->ApplyResources(this->picturePinMap, L"picturePinMap");
-          this->picturePinMap->Name = L"picturePinMap";
-          this->picturePinMap->TabStop = false;
-          this->toolTip1->SetToolTip(this->picturePinMap, resources->GetString(L"picturePinMap.ToolTip"));
-          this->picturePinMap->MouseLeave += gcnew System::EventHandler(this, &Form1::picturePinMap_MouseLeave);
-          this->picturePinMap->MouseMove += gcnew System::Windows::Forms::MouseEventHandler(this, &Form1::picturePinMap_MouseMove);
-          this->picturePinMap->MouseDoubleClick += gcnew System::Windows::Forms::MouseEventHandler(this, &Form1::picturePinMap_MouseDoubleClick);
-          this->picturePinMap->MouseDown += gcnew System::Windows::Forms::MouseEventHandler(this, &Form1::picturePinMap_MouseDown);
-          this->picturePinMap->Paint += gcnew System::Windows::Forms::PaintEventHandler(this, &Form1::picturePinMap_Paint);
-          this->picturePinMap->MouseUp += gcnew System::Windows::Forms::MouseEventHandler(this, &Form1::picturePinMap_MouseUp);
-          // 
-          // EmuBrB
-          // 
-          resources->ApplyResources(this->EmuBrB, L"EmuBrB");
-          this->EmuBrB->Name = L"EmuBrB";
-          this->toolTip1->SetToolTip(this->EmuBrB, resources->GetString(L"EmuBrB.ToolTip"));
-          this->EmuBrB->UseVisualStyleBackColor = true;
-          this->EmuBrB->CheckedChanged += gcnew System::EventHandler(this, &Form1::EmuBrB_Changed);
-          // 
-          // EmuOverrunB
-          // 
-          resources->ApplyResources(this->EmuOverrunB, L"EmuOverrunB");
-          this->EmuOverrunB->Name = L"EmuOverrunB";
-          this->toolTip1->SetToolTip(this->EmuOverrunB, resources->GetString(L"EmuOverrunB.ToolTip"));
-          this->EmuOverrunB->UseVisualStyleBackColor = true;
-          this->EmuOverrunB->CheckedChanged += gcnew System::EventHandler(this, &Form1::EmuOverrunB_Changed);
-          // 
-          // PlugInModeB
-          // 
-          resources->ApplyResources(this->PlugInModeB, L"PlugInModeB");
-          this->PlugInModeB->Name = L"PlugInModeB";
-          this->toolTip1->SetToolTip(this->PlugInModeB, resources->GetString(L"PlugInModeB.ToolTip"));
-          this->PlugInModeB->UseVisualStyleBackColor = true;
-          this->PlugInModeB->CheckedChanged += gcnew System::EventHandler(this, &Form1::PlugInModeB_Changed);
-          // 
-          // ExclusiveModeB
-          // 
-          resources->ApplyResources(this->ExclusiveModeB, L"ExclusiveModeB");
-          this->ExclusiveModeB->Name = L"ExclusiveModeB";
-          this->toolTip1->SetToolTip(this->ExclusiveModeB, resources->GetString(L"ExclusiveModeB.ToolTip"));
-          this->ExclusiveModeB->UseVisualStyleBackColor = true;
-          this->ExclusiveModeB->CheckedChanged += gcnew System::EventHandler(this, &Form1::ExclusiveModeB_Changed);
-          // 
-          // ExclusiveModeA
-          // 
-          resources->ApplyResources(this->ExclusiveModeA, L"ExclusiveModeA");
-          this->ExclusiveModeA->Name = L"ExclusiveModeA";
-          this->toolTip1->SetToolTip(this->ExclusiveModeA, resources->GetString(L"ExclusiveModeA.ToolTip"));
-          this->ExclusiveModeA->UseVisualStyleBackColor = true;
-          this->ExclusiveModeA->CheckedChanged += gcnew System::EventHandler(this, &Form1::ExclusiveModeA_Changed);
-          // 
-          // PlugInModeA
-          // 
-          resources->ApplyResources(this->PlugInModeA, L"PlugInModeA");
-          this->PlugInModeA->Name = L"PlugInModeA";
-          this->toolTip1->SetToolTip(this->PlugInModeA, resources->GetString(L"PlugInModeA.ToolTip"));
-          this->PlugInModeA->UseVisualStyleBackColor = true;
-          this->PlugInModeA->CheckedChanged += gcnew System::EventHandler(this, &Form1::PlugInModeA_Changed);
-          // 
-          // EmuOverrunA
-          // 
-          resources->ApplyResources(this->EmuOverrunA, L"EmuOverrunA");
-          this->EmuOverrunA->Name = L"EmuOverrunA";
-          this->toolTip1->SetToolTip(this->EmuOverrunA, resources->GetString(L"EmuOverrunA.ToolTip"));
-          this->EmuOverrunA->UseVisualStyleBackColor = true;
-          this->EmuOverrunA->CheckedChanged += gcnew System::EventHandler(this, &Form1::EmuOverrunA_Changed);
-          // 
-          // EmuBrA
-          // 
-          resources->ApplyResources(this->EmuBrA, L"EmuBrA");
-          this->EmuBrA->Name = L"EmuBrA";
-          this->toolTip1->SetToolTip(this->EmuBrA, resources->GetString(L"EmuBrA.ToolTip"));
-          this->EmuBrA->UseVisualStyleBackColor = true;
-          this->EmuBrA->CheckedChanged += gcnew System::EventHandler(this, &Form1::EmuBrA_Changed);
-          // 
-          // HiddenModeA
-          // 
-          resources->ApplyResources(this->HiddenModeA, L"HiddenModeA");
-          this->HiddenModeA->Name = L"HiddenModeA";
-          this->toolTip1->SetToolTip(this->HiddenModeA, resources->GetString(L"HiddenModeA.ToolTip"));
-          this->HiddenModeA->UseVisualStyleBackColor = true;
-          this->HiddenModeA->CheckedChanged += gcnew System::EventHandler(this, &Form1::HiddenModeA_Changed);
-          // 
-          // HiddenModeB
-          // 
-          resources->ApplyResources(this->HiddenModeB, L"HiddenModeB");
-          this->HiddenModeB->Name = L"HiddenModeB";
-          this->toolTip1->SetToolTip(this->HiddenModeB, resources->GetString(L"HiddenModeB.ToolTip"));
-          this->HiddenModeB->UseVisualStyleBackColor = true;
-          this->HiddenModeB->CheckedChanged += gcnew System::EventHandler(this, &Form1::HiddenModeB_Changed);
-          // 
-          // pinNameA_RX
-          // 
-          resources->ApplyResources(this->pinNameA_RX, L"pinNameA_RX");
-          this->pinNameA_RX->Name = L"pinNameA_RX";
-          this->toolTip1->SetToolTip(this->pinNameA_RX, resources->GetString(L"pinNameA_RX.ToolTip"));
-          // 
-          // pinNameA_DTR
-          // 
-          resources->ApplyResources(this->pinNameA_DTR, L"pinNameA_DTR");
-          this->pinNameA_DTR->Name = L"pinNameA_DTR";
-          this->toolTip1->SetToolTip(this->pinNameA_DTR, resources->GetString(L"pinNameA_DTR.ToolTip"));
-          // 
-          // pinNameA_TX
-          // 
-          resources->ApplyResources(this->pinNameA_TX, L"pinNameA_TX");
-          this->pinNameA_TX->Name = L"pinNameA_TX";
-          this->toolTip1->SetToolTip(this->pinNameA_TX, resources->GetString(L"pinNameA_TX.ToolTip"));
-          // 
-          // pinNameA_DSR
-          // 
-          resources->ApplyResources(this->pinNameA_DSR, L"pinNameA_DSR");
-          this->pinNameA_DSR->Name = L"pinNameA_DSR";
-          this->toolTip1->SetToolTip(this->pinNameA_DSR, resources->GetString(L"pinNameA_DSR.ToolTip"));
-          // 
-          // pinNameA_DCD
-          // 
-          resources->ApplyResources(this->pinNameA_DCD, L"pinNameA_DCD");
-          this->pinNameA_DCD->Name = L"pinNameA_DCD";
-          this->toolTip1->SetToolTip(this->pinNameA_DCD, resources->GetString(L"pinNameA_DCD.ToolTip"));
-          // 
-          // pinNameA_RTS
-          // 
-          resources->ApplyResources(this->pinNameA_RTS, L"pinNameA_RTS");
-          this->pinNameA_RTS->Name = L"pinNameA_RTS";
-          this->toolTip1->SetToolTip(this->pinNameA_RTS, resources->GetString(L"pinNameA_RTS.ToolTip"));
-          // 
-          // pinNameA_CTS
-          // 
-          resources->ApplyResources(this->pinNameA_CTS, L"pinNameA_CTS");
-          this->pinNameA_CTS->Name = L"pinNameA_CTS";
-          this->toolTip1->SetToolTip(this->pinNameA_CTS, resources->GetString(L"pinNameA_CTS.ToolTip"));
-          // 
-          // pinNameA_RI
-          // 
-          resources->ApplyResources(this->pinNameA_RI, L"pinNameA_RI");
-          this->pinNameA_RI->Name = L"pinNameA_RI";
-          this->toolTip1->SetToolTip(this->pinNameA_RI, resources->GetString(L"pinNameA_RI.ToolTip"));
-          // 
-          // pinNameA_OUT1
-          // 
-          resources->ApplyResources(this->pinNameA_OUT1, L"pinNameA_OUT1");
-          this->pinNameA_OUT1->Name = L"pinNameA_OUT1";
-          this->toolTip1->SetToolTip(this->pinNameA_OUT1, resources->GetString(L"pinNameA_OUT1.ToolTip"));
-          // 
-          // pinNameA_OUT2
-          // 
-          resources->ApplyResources(this->pinNameA_OUT2, L"pinNameA_OUT2");
-          this->pinNameA_OUT2->Name = L"pinNameA_OUT2";
-          this->toolTip1->SetToolTip(this->pinNameA_OUT2, resources->GetString(L"pinNameA_OUT2.ToolTip"));
-          // 
-          // pinNameA_OPEN
-          // 
-          resources->ApplyResources(this->pinNameA_OPEN, L"pinNameA_OPEN");
-          this->pinNameA_OPEN->Name = L"pinNameA_OPEN";
-          this->toolTip1->SetToolTip(this->pinNameA_OPEN, resources->GetString(L"pinNameA_OPEN.ToolTip"));
-          // 
-          // pinNameB_OPEN
-          // 
-          resources->ApplyResources(this->pinNameB_OPEN, L"pinNameB_OPEN");
-          this->pinNameB_OPEN->Name = L"pinNameB_OPEN";
-          this->toolTip1->SetToolTip(this->pinNameB_OPEN, resources->GetString(L"pinNameB_OPEN.ToolTip"));
-          // 
-          // pinNameB_OUT1
-          // 
-          resources->ApplyResources(this->pinNameB_OUT1, L"pinNameB_OUT1");
-          this->pinNameB_OUT1->Name = L"pinNameB_OUT1";
-          this->toolTip1->SetToolTip(this->pinNameB_OUT1, resources->GetString(L"pinNameB_OUT1.ToolTip"));
-          // 
-          // pinNameB_OUT2
-          // 
-          resources->ApplyResources(this->pinNameB_OUT2, L"pinNameB_OUT2");
-          this->pinNameB_OUT2->Name = L"pinNameB_OUT2";
-          this->toolTip1->SetToolTip(this->pinNameB_OUT2, resources->GetString(L"pinNameB_OUT2.ToolTip"));
-          // 
-          // pinNameB_RI
-          // 
-          resources->ApplyResources(this->pinNameB_RI, L"pinNameB_RI");
-          this->pinNameB_RI->Name = L"pinNameB_RI";
-          this->toolTip1->SetToolTip(this->pinNameB_RI, resources->GetString(L"pinNameB_RI.ToolTip"));
-          // 
-          // pinNameB_CTS
-          // 
-          resources->ApplyResources(this->pinNameB_CTS, L"pinNameB_CTS");
-          this->pinNameB_CTS->Name = L"pinNameB_CTS";
-          this->toolTip1->SetToolTip(this->pinNameB_CTS, resources->GetString(L"pinNameB_CTS.ToolTip"));
-          // 
-          // pinNameB_RTS
-          // 
-          resources->ApplyResources(this->pinNameB_RTS, L"pinNameB_RTS");
-          this->pinNameB_RTS->Name = L"pinNameB_RTS";
-          this->toolTip1->SetToolTip(this->pinNameB_RTS, resources->GetString(L"pinNameB_RTS.ToolTip"));
-          // 
-          // pinNameB_DCD
-          // 
-          resources->ApplyResources(this->pinNameB_DCD, L"pinNameB_DCD");
-          this->pinNameB_DCD->Name = L"pinNameB_DCD";
-          this->toolTip1->SetToolTip(this->pinNameB_DCD, resources->GetString(L"pinNameB_DCD.ToolTip"));
-          // 
-          // pinNameB_DSR
-          // 
-          resources->ApplyResources(this->pinNameB_DSR, L"pinNameB_DSR");
-          this->pinNameB_DSR->Name = L"pinNameB_DSR";
-          this->toolTip1->SetToolTip(this->pinNameB_DSR, resources->GetString(L"pinNameB_DSR.ToolTip"));
-          // 
-          // pinNameB_TX
-          // 
-          resources->ApplyResources(this->pinNameB_TX, L"pinNameB_TX");
-          this->pinNameB_TX->Name = L"pinNameB_TX";
-          this->toolTip1->SetToolTip(this->pinNameB_TX, resources->GetString(L"pinNameB_TX.ToolTip"));
-          // 
-          // pinNameB_DTR
-          // 
-          resources->ApplyResources(this->pinNameB_DTR, L"pinNameB_DTR");
-          this->pinNameB_DTR->Name = L"pinNameB_DTR";
-          this->toolTip1->SetToolTip(this->pinNameB_DTR, resources->GetString(L"pinNameB_DTR.ToolTip"));
-          // 
-          // pinNameB_RX
-          // 
-          resources->ApplyResources(this->pinNameB_RX, L"pinNameB_RX");
-          this->pinNameB_RX->Name = L"pinNameB_RX";
-          this->toolTip1->SetToolTip(this->pinNameB_RX, resources->GetString(L"pinNameB_RX.ToolTip"));
-          // 
-          // pairList
-          // 
-          this->pairList->HideSelection = false;
-          resources->ApplyResources(this->pairList, L"pairList");
-          this->pairList->Name = L"pairList";
-          this->toolTip1->SetToolTip(this->pairList, resources->GetString(L"pairList.ToolTip"));
-          this->pairList->AfterSelect += gcnew System::Windows::Forms::TreeViewEventHandler(this, &Form1::pairsList_AfterSelect);
-          this->pairList->BeforeSelect += gcnew System::Windows::Forms::TreeViewCancelEventHandler(this, &Form1::pairsList_BeforeSelect);
-          // 
-          // buttonRemovePair
-          // 
-          resources->ApplyResources(this->buttonRemovePair, L"buttonRemovePair");
-          this->buttonRemovePair->Name = L"buttonRemovePair";
-          this->toolTip1->SetToolTip(this->buttonRemovePair, resources->GetString(L"buttonRemovePair.ToolTip"));
-          this->buttonRemovePair->UseVisualStyleBackColor = true;
-          this->buttonRemovePair->Click += gcnew System::EventHandler(this, &Form1::buttonRemovePair_Click);
-          // 
-          // buttonAddPair
-          // 
-          resources->ApplyResources(this->buttonAddPair, L"buttonAddPair");
-          this->buttonAddPair->Name = L"buttonAddPair";
-          this->toolTip1->SetToolTip(this->buttonAddPair, resources->GetString(L"buttonAddPair.ToolTip"));
-          this->buttonAddPair->UseVisualStyleBackColor = true;
-          this->buttonAddPair->Click += gcnew System::EventHandler(this, &Form1::buttonAddPair_Click);
-          // 
-          // buttonApply
-          // 
-          resources->ApplyResources(this->buttonApply, L"buttonApply");
-          this->buttonApply->Name = L"buttonApply";
-          this->toolTip1->SetToolTip(this->buttonApply, resources->GetString(L"buttonApply.ToolTip"));
-          this->buttonApply->UseVisualStyleBackColor = true;
-          this->buttonApply->Click += gcnew System::EventHandler(this, &Form1::buttonApply_Click);
-          // 
-          // buttonReset
-          // 
-          resources->ApplyResources(this->buttonReset, L"buttonReset");
-          this->buttonReset->Name = L"buttonReset";
-          this->toolTip1->SetToolTip(this->buttonReset, resources->GetString(L"buttonReset.ToolTip"));
-          this->buttonReset->UseVisualStyleBackColor = true;
-          this->buttonReset->Click += gcnew System::EventHandler(this, &Form1::buttonReset_Click);
-          // 
-          // Form1
-          // 
-          resources->ApplyResources(this, L"$this");
-          this->AutoScaleMode = System::Windows::Forms::AutoScaleMode::Font;
-          this->Controls->Add(this->UsePortsClassA);
-          this->Controls->Add(this->UsePortsClassB);
-          this->Controls->Add(this->HiddenModeA);
-          this->Controls->Add(this->HiddenModeB);
-          this->Controls->Add(this->pinNameB_OPEN);
-          this->Controls->Add(this->pinNameB_OUT1);
-          this->Controls->Add(this->pinNameB_OUT2);
-          this->Controls->Add(this->pinNameB_RI);
-          this->Controls->Add(this->pinNameB_CTS);
-          this->Controls->Add(this->pinNameB_RTS);
-          this->Controls->Add(this->pinNameB_DCD);
-          this->Controls->Add(this->pinNameB_DSR);
-          this->Controls->Add(this->pinNameB_TX);
-          this->Controls->Add(this->pinNameB_DTR);
-          this->Controls->Add(this->pinNameB_RX);
-          this->Controls->Add(this->pinNameA_OPEN);
-          this->Controls->Add(this->pinNameA_OUT1);
-          this->Controls->Add(this->pinNameA_OUT2);
-          this->Controls->Add(this->pinNameA_RI);
-          this->Controls->Add(this->pinNameA_CTS);
-          this->Controls->Add(this->pinNameA_RTS);
-          this->Controls->Add(this->pinNameA_DCD);
-          this->Controls->Add(this->pinNameA_DSR);
-          this->Controls->Add(this->pinNameA_TX);
-          this->Controls->Add(this->pinNameA_DTR);
-          this->Controls->Add(this->pinNameA_RX);
-          this->Controls->Add(this->ExclusiveModeA);
-          this->Controls->Add(this->PlugInModeA);
-          this->Controls->Add(this->EmuOverrunA);
-          this->Controls->Add(this->EmuBrA);
-          this->Controls->Add(this->ExclusiveModeB);
-          this->Controls->Add(this->PlugInModeB);
-          this->Controls->Add(this->EmuOverrunB);
-          this->Controls->Add(this->EmuBrB);
-          this->Controls->Add(this->buttonReset);
-          this->Controls->Add(this->buttonApply);
-          this->Controls->Add(this->buttonAddPair);
-          this->Controls->Add(this->buttonRemovePair);
-          this->Controls->Add(this->pairList);
-          this->Controls->Add(this->PortNameB);
-          this->Controls->Add(this->PortNameA);
-          this->Controls->Add(this->pinNameON);
-          this->Controls->Add(this->picturePinMap);
-          this->FormBorderStyle = System::Windows::Forms::FormBorderStyle::FixedDialog;
-          this->MaximizeBox = false;
-          this->Name = L"Form1";
-          this->Load += gcnew System::EventHandler(this, &Form1::this_Load);
-          (cli::safe_cast<System::ComponentModel::ISupportInitialize^  >(this->picturePinMap))->EndInit();
-          this->ResumeLayout(false);
-          this->PerformLayout();
+			this->components = (gcnew System::ComponentModel::Container());
+			System::ComponentModel::ComponentResourceManager^  resources = (gcnew System::ComponentModel::ComponentResourceManager(Form1::typeid));
+			this->PortNameB = (gcnew System::Windows::Forms::TextBox());
+			this->PortNameA = (gcnew System::Windows::Forms::TextBox());
+			this->UsePortsClassB = (gcnew System::Windows::Forms::CheckBox());
+			this->UsePortsClassA = (gcnew System::Windows::Forms::CheckBox());
+			this->pinNameON = (gcnew System::Windows::Forms::Label());
+			this->picturePinMap = (gcnew System::Windows::Forms::PictureBox());
+			this->toolTip1 = (gcnew System::Windows::Forms::ToolTip(this->components));
+			this->EmuBrB = (gcnew System::Windows::Forms::CheckBox());
+			this->EmuOverrunB = (gcnew System::Windows::Forms::CheckBox());
+			this->PlugInModeB = (gcnew System::Windows::Forms::CheckBox());
+			this->ExclusiveModeB = (gcnew System::Windows::Forms::CheckBox());
+			this->ExclusiveModeA = (gcnew System::Windows::Forms::CheckBox());
+			this->PlugInModeA = (gcnew System::Windows::Forms::CheckBox());
+			this->EmuOverrunA = (gcnew System::Windows::Forms::CheckBox());
+			this->EmuBrA = (gcnew System::Windows::Forms::CheckBox());
+			this->HiddenModeA = (gcnew System::Windows::Forms::CheckBox());
+			this->HiddenModeB = (gcnew System::Windows::Forms::CheckBox());
+			this->pinNameA_RX = (gcnew System::Windows::Forms::Label());
+			this->pinNameA_DTR = (gcnew System::Windows::Forms::Label());
+			this->pinNameA_TX = (gcnew System::Windows::Forms::Label());
+			this->pinNameA_DSR = (gcnew System::Windows::Forms::Label());
+			this->pinNameA_DCD = (gcnew System::Windows::Forms::Label());
+			this->pinNameA_RTS = (gcnew System::Windows::Forms::Label());
+			this->pinNameA_CTS = (gcnew System::Windows::Forms::Label());
+			this->pinNameA_RI = (gcnew System::Windows::Forms::Label());
+			this->pinNameA_OUT1 = (gcnew System::Windows::Forms::Label());
+			this->pinNameA_OUT2 = (gcnew System::Windows::Forms::Label());
+			this->pinNameA_OPEN = (gcnew System::Windows::Forms::Label());
+			this->pinNameB_OPEN = (gcnew System::Windows::Forms::Label());
+			this->pinNameB_OUT1 = (gcnew System::Windows::Forms::Label());
+			this->pinNameB_OUT2 = (gcnew System::Windows::Forms::Label());
+			this->pinNameB_RI = (gcnew System::Windows::Forms::Label());
+			this->pinNameB_CTS = (gcnew System::Windows::Forms::Label());
+			this->pinNameB_RTS = (gcnew System::Windows::Forms::Label());
+			this->pinNameB_DCD = (gcnew System::Windows::Forms::Label());
+			this->pinNameB_DSR = (gcnew System::Windows::Forms::Label());
+			this->pinNameB_TX = (gcnew System::Windows::Forms::Label());
+			this->pinNameB_DTR = (gcnew System::Windows::Forms::Label());
+			this->pinNameB_RX = (gcnew System::Windows::Forms::Label());
+			this->pairList = (gcnew System::Windows::Forms::TreeView());
+			this->buttonRemovePair = (gcnew System::Windows::Forms::Button());
+			this->buttonAddPair = (gcnew System::Windows::Forms::Button());
+			this->buttonApply = (gcnew System::Windows::Forms::Button());
+			this->buttonReset = (gcnew System::Windows::Forms::Button());
+			this->panel1 = (gcnew System::Windows::Forms::Panel());
+			this->buttonConnect = (gcnew System::Windows::Forms::Button());
+			this->label1 = (gcnew System::Windows::Forms::Label());
+			this->checkBoxPSDR = (gcnew System::Windows::Forms::CheckBox());
+			this->checkBoxRC = (gcnew System::Windows::Forms::CheckBox());
+			this->comboBox1 = (gcnew System::Windows::Forms::ComboBox());
+			this->textBox1 = (gcnew System::Windows::Forms::TextBox());
+			this->serialRC = (gcnew System::IO::Ports::SerialPort(this->components));
+			this->serialPSDR = (gcnew System::IO::Ports::SerialPort(this->components));
+			this->timerOpenPorts = (gcnew System::Windows::Forms::Timer(this->components));
+			this->timerReadRC = (gcnew System::Windows::Forms::Timer(this->components));
+			this->notifyIcon = (gcnew System::Windows::Forms::NotifyIcon(this->components));
+			(cli::safe_cast<System::ComponentModel::ISupportInitialize^  >(this->picturePinMap))->BeginInit();
+			this->panel1->SuspendLayout();
+			this->SuspendLayout();
+			// 
+			// PortNameB
+			// 
+			resources->ApplyResources(this->PortNameB, L"PortNameB");
+			this->PortNameB->Name = L"PortNameB";
+			this->toolTip1->SetToolTip(this->PortNameB, resources->GetString(L"PortNameB.ToolTip"));
+			this->PortNameB->TextChanged += gcnew System::EventHandler(this, &Form1::PortNameB_Changed);
+			// 
+			// PortNameA
+			// 
+			resources->ApplyResources(this->PortNameA, L"PortNameA");
+			this->PortNameA->Name = L"PortNameA";
+			this->toolTip1->SetToolTip(this->PortNameA, resources->GetString(L"PortNameA.ToolTip"));
+			this->PortNameA->TextChanged += gcnew System::EventHandler(this, &Form1::PortNameA_Changed);
+			// 
+			// UsePortsClassB
+			// 
+			resources->ApplyResources(this->UsePortsClassB, L"UsePortsClassB");
+			this->UsePortsClassB->Name = L"UsePortsClassB";
+			this->toolTip1->SetToolTip(this->UsePortsClassB, resources->GetString(L"UsePortsClassB.ToolTip"));
+			this->UsePortsClassB->UseVisualStyleBackColor = true;
+			this->UsePortsClassB->CheckedChanged += gcnew System::EventHandler(this, &Form1::UsePortsClassB_Changed);
+			// 
+			// UsePortsClassA
+			// 
+			resources->ApplyResources(this->UsePortsClassA, L"UsePortsClassA");
+			this->UsePortsClassA->Name = L"UsePortsClassA";
+			this->toolTip1->SetToolTip(this->UsePortsClassA, resources->GetString(L"UsePortsClassA.ToolTip"));
+			this->UsePortsClassA->UseVisualStyleBackColor = true;
+			this->UsePortsClassA->CheckedChanged += gcnew System::EventHandler(this, &Form1::UsePortsClassA_Changed);
+			// 
+			// pinNameON
+			// 
+			resources->ApplyResources(this->pinNameON, L"pinNameON");
+			this->pinNameON->Name = L"pinNameON";
+			this->toolTip1->SetToolTip(this->pinNameON, resources->GetString(L"pinNameON.ToolTip"));
+			// 
+			// picturePinMap
+			// 
+			this->picturePinMap->BackColor = System::Drawing::SystemColors::Control;
+			this->picturePinMap->Cursor = System::Windows::Forms::Cursors::Hand;
+			resources->ApplyResources(this->picturePinMap, L"picturePinMap");
+			this->picturePinMap->Name = L"picturePinMap";
+			this->picturePinMap->TabStop = false;
+			this->toolTip1->SetToolTip(this->picturePinMap, resources->GetString(L"picturePinMap.ToolTip"));
+			this->picturePinMap->Paint += gcnew System::Windows::Forms::PaintEventHandler(this, &Form1::picturePinMap_Paint);
+			this->picturePinMap->MouseDoubleClick += gcnew System::Windows::Forms::MouseEventHandler(this, &Form1::picturePinMap_MouseDoubleClick);
+			this->picturePinMap->MouseDown += gcnew System::Windows::Forms::MouseEventHandler(this, &Form1::picturePinMap_MouseDown);
+			this->picturePinMap->MouseLeave += gcnew System::EventHandler(this, &Form1::picturePinMap_MouseLeave);
+			this->picturePinMap->MouseMove += gcnew System::Windows::Forms::MouseEventHandler(this, &Form1::picturePinMap_MouseMove);
+			this->picturePinMap->MouseUp += gcnew System::Windows::Forms::MouseEventHandler(this, &Form1::picturePinMap_MouseUp);
+			// 
+			// EmuBrB
+			// 
+			resources->ApplyResources(this->EmuBrB, L"EmuBrB");
+			this->EmuBrB->Name = L"EmuBrB";
+			this->toolTip1->SetToolTip(this->EmuBrB, resources->GetString(L"EmuBrB.ToolTip"));
+			this->EmuBrB->UseVisualStyleBackColor = true;
+			this->EmuBrB->CheckedChanged += gcnew System::EventHandler(this, &Form1::EmuBrB_Changed);
+			// 
+			// EmuOverrunB
+			// 
+			resources->ApplyResources(this->EmuOverrunB, L"EmuOverrunB");
+			this->EmuOverrunB->Name = L"EmuOverrunB";
+			this->toolTip1->SetToolTip(this->EmuOverrunB, resources->GetString(L"EmuOverrunB.ToolTip"));
+			this->EmuOverrunB->UseVisualStyleBackColor = true;
+			this->EmuOverrunB->CheckedChanged += gcnew System::EventHandler(this, &Form1::EmuOverrunB_Changed);
+			// 
+			// PlugInModeB
+			// 
+			resources->ApplyResources(this->PlugInModeB, L"PlugInModeB");
+			this->PlugInModeB->Name = L"PlugInModeB";
+			this->toolTip1->SetToolTip(this->PlugInModeB, resources->GetString(L"PlugInModeB.ToolTip"));
+			this->PlugInModeB->UseVisualStyleBackColor = true;
+			this->PlugInModeB->CheckedChanged += gcnew System::EventHandler(this, &Form1::PlugInModeB_Changed);
+			// 
+			// ExclusiveModeB
+			// 
+			resources->ApplyResources(this->ExclusiveModeB, L"ExclusiveModeB");
+			this->ExclusiveModeB->Name = L"ExclusiveModeB";
+			this->toolTip1->SetToolTip(this->ExclusiveModeB, resources->GetString(L"ExclusiveModeB.ToolTip"));
+			this->ExclusiveModeB->UseVisualStyleBackColor = true;
+			this->ExclusiveModeB->CheckedChanged += gcnew System::EventHandler(this, &Form1::ExclusiveModeB_Changed);
+			// 
+			// ExclusiveModeA
+			// 
+			resources->ApplyResources(this->ExclusiveModeA, L"ExclusiveModeA");
+			this->ExclusiveModeA->Name = L"ExclusiveModeA";
+			this->toolTip1->SetToolTip(this->ExclusiveModeA, resources->GetString(L"ExclusiveModeA.ToolTip"));
+			this->ExclusiveModeA->UseVisualStyleBackColor = true;
+			this->ExclusiveModeA->CheckedChanged += gcnew System::EventHandler(this, &Form1::ExclusiveModeA_Changed);
+			// 
+			// PlugInModeA
+			// 
+			resources->ApplyResources(this->PlugInModeA, L"PlugInModeA");
+			this->PlugInModeA->Name = L"PlugInModeA";
+			this->toolTip1->SetToolTip(this->PlugInModeA, resources->GetString(L"PlugInModeA.ToolTip"));
+			this->PlugInModeA->UseVisualStyleBackColor = true;
+			this->PlugInModeA->CheckedChanged += gcnew System::EventHandler(this, &Form1::PlugInModeA_Changed);
+			// 
+			// EmuOverrunA
+			// 
+			resources->ApplyResources(this->EmuOverrunA, L"EmuOverrunA");
+			this->EmuOverrunA->Name = L"EmuOverrunA";
+			this->toolTip1->SetToolTip(this->EmuOverrunA, resources->GetString(L"EmuOverrunA.ToolTip"));
+			this->EmuOverrunA->UseVisualStyleBackColor = true;
+			this->EmuOverrunA->CheckedChanged += gcnew System::EventHandler(this, &Form1::EmuOverrunA_Changed);
+			// 
+			// EmuBrA
+			// 
+			resources->ApplyResources(this->EmuBrA, L"EmuBrA");
+			this->EmuBrA->Name = L"EmuBrA";
+			this->toolTip1->SetToolTip(this->EmuBrA, resources->GetString(L"EmuBrA.ToolTip"));
+			this->EmuBrA->UseVisualStyleBackColor = true;
+			this->EmuBrA->CheckedChanged += gcnew System::EventHandler(this, &Form1::EmuBrA_Changed);
+			// 
+			// HiddenModeA
+			// 
+			resources->ApplyResources(this->HiddenModeA, L"HiddenModeA");
+			this->HiddenModeA->Name = L"HiddenModeA";
+			this->toolTip1->SetToolTip(this->HiddenModeA, resources->GetString(L"HiddenModeA.ToolTip"));
+			this->HiddenModeA->UseVisualStyleBackColor = true;
+			this->HiddenModeA->CheckedChanged += gcnew System::EventHandler(this, &Form1::HiddenModeA_Changed);
+			// 
+			// HiddenModeB
+			// 
+			resources->ApplyResources(this->HiddenModeB, L"HiddenModeB");
+			this->HiddenModeB->Name = L"HiddenModeB";
+			this->toolTip1->SetToolTip(this->HiddenModeB, resources->GetString(L"HiddenModeB.ToolTip"));
+			this->HiddenModeB->UseVisualStyleBackColor = true;
+			this->HiddenModeB->CheckedChanged += gcnew System::EventHandler(this, &Form1::HiddenModeB_Changed);
+			// 
+			// pinNameA_RX
+			// 
+			resources->ApplyResources(this->pinNameA_RX, L"pinNameA_RX");
+			this->pinNameA_RX->Name = L"pinNameA_RX";
+			this->toolTip1->SetToolTip(this->pinNameA_RX, resources->GetString(L"pinNameA_RX.ToolTip"));
+			// 
+			// pinNameA_DTR
+			// 
+			resources->ApplyResources(this->pinNameA_DTR, L"pinNameA_DTR");
+			this->pinNameA_DTR->Name = L"pinNameA_DTR";
+			this->toolTip1->SetToolTip(this->pinNameA_DTR, resources->GetString(L"pinNameA_DTR.ToolTip"));
+			// 
+			// pinNameA_TX
+			// 
+			resources->ApplyResources(this->pinNameA_TX, L"pinNameA_TX");
+			this->pinNameA_TX->Name = L"pinNameA_TX";
+			this->toolTip1->SetToolTip(this->pinNameA_TX, resources->GetString(L"pinNameA_TX.ToolTip"));
+			// 
+			// pinNameA_DSR
+			// 
+			resources->ApplyResources(this->pinNameA_DSR, L"pinNameA_DSR");
+			this->pinNameA_DSR->Name = L"pinNameA_DSR";
+			this->toolTip1->SetToolTip(this->pinNameA_DSR, resources->GetString(L"pinNameA_DSR.ToolTip"));
+			// 
+			// pinNameA_DCD
+			// 
+			resources->ApplyResources(this->pinNameA_DCD, L"pinNameA_DCD");
+			this->pinNameA_DCD->Name = L"pinNameA_DCD";
+			this->toolTip1->SetToolTip(this->pinNameA_DCD, resources->GetString(L"pinNameA_DCD.ToolTip"));
+			// 
+			// pinNameA_RTS
+			// 
+			resources->ApplyResources(this->pinNameA_RTS, L"pinNameA_RTS");
+			this->pinNameA_RTS->Name = L"pinNameA_RTS";
+			this->toolTip1->SetToolTip(this->pinNameA_RTS, resources->GetString(L"pinNameA_RTS.ToolTip"));
+			// 
+			// pinNameA_CTS
+			// 
+			resources->ApplyResources(this->pinNameA_CTS, L"pinNameA_CTS");
+			this->pinNameA_CTS->Name = L"pinNameA_CTS";
+			this->toolTip1->SetToolTip(this->pinNameA_CTS, resources->GetString(L"pinNameA_CTS.ToolTip"));
+			// 
+			// pinNameA_RI
+			// 
+			resources->ApplyResources(this->pinNameA_RI, L"pinNameA_RI");
+			this->pinNameA_RI->Name = L"pinNameA_RI";
+			this->toolTip1->SetToolTip(this->pinNameA_RI, resources->GetString(L"pinNameA_RI.ToolTip"));
+			// 
+			// pinNameA_OUT1
+			// 
+			resources->ApplyResources(this->pinNameA_OUT1, L"pinNameA_OUT1");
+			this->pinNameA_OUT1->Name = L"pinNameA_OUT1";
+			this->toolTip1->SetToolTip(this->pinNameA_OUT1, resources->GetString(L"pinNameA_OUT1.ToolTip"));
+			// 
+			// pinNameA_OUT2
+			// 
+			resources->ApplyResources(this->pinNameA_OUT2, L"pinNameA_OUT2");
+			this->pinNameA_OUT2->Name = L"pinNameA_OUT2";
+			this->toolTip1->SetToolTip(this->pinNameA_OUT2, resources->GetString(L"pinNameA_OUT2.ToolTip"));
+			// 
+			// pinNameA_OPEN
+			// 
+			resources->ApplyResources(this->pinNameA_OPEN, L"pinNameA_OPEN");
+			this->pinNameA_OPEN->Name = L"pinNameA_OPEN";
+			this->toolTip1->SetToolTip(this->pinNameA_OPEN, resources->GetString(L"pinNameA_OPEN.ToolTip"));
+			// 
+			// pinNameB_OPEN
+			// 
+			resources->ApplyResources(this->pinNameB_OPEN, L"pinNameB_OPEN");
+			this->pinNameB_OPEN->Name = L"pinNameB_OPEN";
+			this->toolTip1->SetToolTip(this->pinNameB_OPEN, resources->GetString(L"pinNameB_OPEN.ToolTip"));
+			// 
+			// pinNameB_OUT1
+			// 
+			resources->ApplyResources(this->pinNameB_OUT1, L"pinNameB_OUT1");
+			this->pinNameB_OUT1->Name = L"pinNameB_OUT1";
+			this->toolTip1->SetToolTip(this->pinNameB_OUT1, resources->GetString(L"pinNameB_OUT1.ToolTip"));
+			// 
+			// pinNameB_OUT2
+			// 
+			resources->ApplyResources(this->pinNameB_OUT2, L"pinNameB_OUT2");
+			this->pinNameB_OUT2->Name = L"pinNameB_OUT2";
+			this->toolTip1->SetToolTip(this->pinNameB_OUT2, resources->GetString(L"pinNameB_OUT2.ToolTip"));
+			// 
+			// pinNameB_RI
+			// 
+			resources->ApplyResources(this->pinNameB_RI, L"pinNameB_RI");
+			this->pinNameB_RI->Name = L"pinNameB_RI";
+			this->toolTip1->SetToolTip(this->pinNameB_RI, resources->GetString(L"pinNameB_RI.ToolTip"));
+			// 
+			// pinNameB_CTS
+			// 
+			resources->ApplyResources(this->pinNameB_CTS, L"pinNameB_CTS");
+			this->pinNameB_CTS->Name = L"pinNameB_CTS";
+			this->toolTip1->SetToolTip(this->pinNameB_CTS, resources->GetString(L"pinNameB_CTS.ToolTip"));
+			// 
+			// pinNameB_RTS
+			// 
+			resources->ApplyResources(this->pinNameB_RTS, L"pinNameB_RTS");
+			this->pinNameB_RTS->Name = L"pinNameB_RTS";
+			this->toolTip1->SetToolTip(this->pinNameB_RTS, resources->GetString(L"pinNameB_RTS.ToolTip"));
+			// 
+			// pinNameB_DCD
+			// 
+			resources->ApplyResources(this->pinNameB_DCD, L"pinNameB_DCD");
+			this->pinNameB_DCD->Name = L"pinNameB_DCD";
+			this->toolTip1->SetToolTip(this->pinNameB_DCD, resources->GetString(L"pinNameB_DCD.ToolTip"));
+			// 
+			// pinNameB_DSR
+			// 
+			resources->ApplyResources(this->pinNameB_DSR, L"pinNameB_DSR");
+			this->pinNameB_DSR->Name = L"pinNameB_DSR";
+			this->toolTip1->SetToolTip(this->pinNameB_DSR, resources->GetString(L"pinNameB_DSR.ToolTip"));
+			// 
+			// pinNameB_TX
+			// 
+			resources->ApplyResources(this->pinNameB_TX, L"pinNameB_TX");
+			this->pinNameB_TX->Name = L"pinNameB_TX";
+			this->toolTip1->SetToolTip(this->pinNameB_TX, resources->GetString(L"pinNameB_TX.ToolTip"));
+			// 
+			// pinNameB_DTR
+			// 
+			resources->ApplyResources(this->pinNameB_DTR, L"pinNameB_DTR");
+			this->pinNameB_DTR->Name = L"pinNameB_DTR";
+			this->toolTip1->SetToolTip(this->pinNameB_DTR, resources->GetString(L"pinNameB_DTR.ToolTip"));
+			// 
+			// pinNameB_RX
+			// 
+			resources->ApplyResources(this->pinNameB_RX, L"pinNameB_RX");
+			this->pinNameB_RX->Name = L"pinNameB_RX";
+			this->toolTip1->SetToolTip(this->pinNameB_RX, resources->GetString(L"pinNameB_RX.ToolTip"));
+			// 
+			// pairList
+			// 
+			this->pairList->HideSelection = false;
+			resources->ApplyResources(this->pairList, L"pairList");
+			this->pairList->Name = L"pairList";
+			this->toolTip1->SetToolTip(this->pairList, resources->GetString(L"pairList.ToolTip"));
+			this->pairList->BeforeSelect += gcnew System::Windows::Forms::TreeViewCancelEventHandler(this, &Form1::pairsList_BeforeSelect);
+			this->pairList->AfterSelect += gcnew System::Windows::Forms::TreeViewEventHandler(this, &Form1::pairsList_AfterSelect);
+			// 
+			// buttonRemovePair
+			// 
+			resources->ApplyResources(this->buttonRemovePair, L"buttonRemovePair");
+			this->buttonRemovePair->Name = L"buttonRemovePair";
+			this->toolTip1->SetToolTip(this->buttonRemovePair, resources->GetString(L"buttonRemovePair.ToolTip"));
+			this->buttonRemovePair->UseVisualStyleBackColor = true;
+			this->buttonRemovePair->Click += gcnew System::EventHandler(this, &Form1::buttonRemovePair_Click);
+			// 
+			// buttonAddPair
+			// 
+			resources->ApplyResources(this->buttonAddPair, L"buttonAddPair");
+			this->buttonAddPair->Name = L"buttonAddPair";
+			this->toolTip1->SetToolTip(this->buttonAddPair, resources->GetString(L"buttonAddPair.ToolTip"));
+			this->buttonAddPair->UseVisualStyleBackColor = true;
+			this->buttonAddPair->Click += gcnew System::EventHandler(this, &Form1::buttonAddPair_Click);
+			// 
+			// buttonApply
+			// 
+			resources->ApplyResources(this->buttonApply, L"buttonApply");
+			this->buttonApply->Name = L"buttonApply";
+			this->toolTip1->SetToolTip(this->buttonApply, resources->GetString(L"buttonApply.ToolTip"));
+			this->buttonApply->UseVisualStyleBackColor = true;
+			this->buttonApply->Click += gcnew System::EventHandler(this, &Form1::buttonApply_Click);
+			// 
+			// buttonReset
+			// 
+			resources->ApplyResources(this->buttonReset, L"buttonReset");
+			this->buttonReset->Name = L"buttonReset";
+			this->toolTip1->SetToolTip(this->buttonReset, resources->GetString(L"buttonReset.ToolTip"));
+			this->buttonReset->UseVisualStyleBackColor = true;
+			this->buttonReset->Click += gcnew System::EventHandler(this, &Form1::buttonReset_Click);
+			// 
+			// panel1
+			// 
+			resources->ApplyResources(this->panel1, L"panel1");
+			this->panel1->Controls->Add(this->buttonConnect);
+			this->panel1->Controls->Add(this->label1);
+			this->panel1->Controls->Add(this->checkBoxPSDR);
+			this->panel1->Controls->Add(this->checkBoxRC);
+			this->panel1->Controls->Add(this->comboBox1);
+			this->panel1->Controls->Add(this->textBox1);
+			this->panel1->Name = L"panel1";
+			// 
+			// buttonConnect
+			// 
+			resources->ApplyResources(this->buttonConnect, L"buttonConnect");
+			this->buttonConnect->Name = L"buttonConnect";
+			this->buttonConnect->UseVisualStyleBackColor = true;
+			this->buttonConnect->Click += gcnew System::EventHandler(this, &Form1::buttonConnect_Click);
+			// 
+			// label1
+			// 
+			resources->ApplyResources(this->label1, L"label1");
+			this->label1->Name = L"label1";
+			// 
+			// checkBoxPSDR
+			// 
+			resources->ApplyResources(this->checkBoxPSDR, L"checkBoxPSDR");
+			this->checkBoxPSDR->Name = L"checkBoxPSDR";
+			this->checkBoxPSDR->UseVisualStyleBackColor = true;
+			// 
+			// checkBoxRC
+			// 
+			resources->ApplyResources(this->checkBoxRC, L"checkBoxRC");
+			this->checkBoxRC->Name = L"checkBoxRC";
+			this->checkBoxRC->UseVisualStyleBackColor = true;
+			// 
+			// comboBox1
+			// 
+			this->comboBox1->FormattingEnabled = true;
+			resources->ApplyResources(this->comboBox1, L"comboBox1");
+			this->comboBox1->Name = L"comboBox1";
+			// 
+			// textBox1
+			// 
+			resources->ApplyResources(this->textBox1, L"textBox1");
+			this->textBox1->Name = L"textBox1";
+			// 
+			// serialRC
+			// 
+			this->serialRC->ReadTimeout = 1;
+			this->serialRC->WriteTimeout = 1;
+			// 
+			// serialPSDR
+			// 
+			this->serialPSDR->PortName = L"COM98";
+			this->serialPSDR->ReadTimeout = 5;
+			this->serialPSDR->WriteTimeout = 5;
+			// 
+			// timerOpenPorts
+			// 
+			this->timerOpenPorts->Enabled = true;
+			this->timerOpenPorts->Interval = 3000;
+			this->timerOpenPorts->Tick += gcnew System::EventHandler(this, &Form1::timerOpenPorts_Tick);
+			// 
+			// timerReadRC
+			// 
+			this->timerReadRC->Enabled = true;
+			this->timerReadRC->Tick += gcnew System::EventHandler(this, &Form1::timerReadRC_Tick);
+			// 
+			// notifyIcon
+			// 
+			this->notifyIcon->BalloonTipIcon = System::Windows::Forms::ToolTipIcon::Info;
+			resources->ApplyResources(this->notifyIcon, L"notifyIcon");
+			this->notifyIcon->MouseClick += gcnew System::Windows::Forms::MouseEventHandler(this, &Form1::notifyIcon_MouseClick);
+			// 
+			// Form1
+			// 
+			resources->ApplyResources(this, L"$this");
+			this->AutoScaleMode = System::Windows::Forms::AutoScaleMode::Font;
+			this->Controls->Add(this->panel1);
+			this->Controls->Add(this->UsePortsClassA);
+			this->Controls->Add(this->UsePortsClassB);
+			this->Controls->Add(this->HiddenModeA);
+			this->Controls->Add(this->HiddenModeB);
+			this->Controls->Add(this->pinNameB_OPEN);
+			this->Controls->Add(this->pinNameB_OUT1);
+			this->Controls->Add(this->pinNameB_OUT2);
+			this->Controls->Add(this->pinNameB_RI);
+			this->Controls->Add(this->pinNameB_CTS);
+			this->Controls->Add(this->pinNameB_RTS);
+			this->Controls->Add(this->pinNameB_DCD);
+			this->Controls->Add(this->pinNameB_DSR);
+			this->Controls->Add(this->pinNameB_TX);
+			this->Controls->Add(this->pinNameB_DTR);
+			this->Controls->Add(this->pinNameB_RX);
+			this->Controls->Add(this->pinNameA_OPEN);
+			this->Controls->Add(this->pinNameA_OUT1);
+			this->Controls->Add(this->pinNameA_OUT2);
+			this->Controls->Add(this->pinNameA_RI);
+			this->Controls->Add(this->pinNameA_CTS);
+			this->Controls->Add(this->pinNameA_RTS);
+			this->Controls->Add(this->pinNameA_DCD);
+			this->Controls->Add(this->pinNameA_DSR);
+			this->Controls->Add(this->pinNameA_TX);
+			this->Controls->Add(this->pinNameA_DTR);
+			this->Controls->Add(this->pinNameA_RX);
+			this->Controls->Add(this->ExclusiveModeA);
+			this->Controls->Add(this->PlugInModeA);
+			this->Controls->Add(this->EmuOverrunA);
+			this->Controls->Add(this->EmuBrA);
+			this->Controls->Add(this->ExclusiveModeB);
+			this->Controls->Add(this->PlugInModeB);
+			this->Controls->Add(this->EmuOverrunB);
+			this->Controls->Add(this->EmuBrB);
+			this->Controls->Add(this->buttonReset);
+			this->Controls->Add(this->buttonApply);
+			this->Controls->Add(this->buttonAddPair);
+			this->Controls->Add(this->buttonRemovePair);
+			this->Controls->Add(this->pairList);
+			this->Controls->Add(this->PortNameB);
+			this->Controls->Add(this->PortNameA);
+			this->Controls->Add(this->pinNameON);
+			this->Controls->Add(this->picturePinMap);
+			this->MaximizeBox = false;
+			this->Name = L"Form1";
+			this->FormClosing += gcnew System::Windows::Forms::FormClosingEventHandler(this, &Form1::Form1_FormClosing);
+			this->Load += gcnew System::EventHandler(this, &Form1::this_Load);
+			this->SizeChanged += gcnew System::EventHandler(this, &Form1::Form1_SizeChanged);
+			(cli::safe_cast<System::ComponentModel::ISupportInitialize^  >(this->picturePinMap))->EndInit();
+			this->panel1->ResumeLayout(false);
+			this->panel1->PerformLayout();
+			this->ResumeLayout(false);
+			this->PerformLayout();
 
-        }
+		}
 #pragma endregion
 
+#pragma region COM0COM code
     private:
 
         String ^GetControlValue(CheckBox ^control) {
@@ -905,16 +1019,6 @@ namespace SetupApp {
         PinMap ^pinMap;
         PortPairs ^pairs;
 
-        Void this_Load(Object ^/*sender*/, EventArgs ^/*e*/) {
-          ForEachControlPair(Init())
-
-          pinMap = gcnew PinMap;
-          pairs = gcnew PortPairs(this);
-
-          pairs->Init();
-          Reset();
-        }
-
     private:
 
         Void picturePinMap_Paint(Object ^/*sender*/, PaintEventArgs ^e) {
@@ -1002,5 +1106,212 @@ namespace SetupApp {
           pairs->Init();
           Reset();
         }
-    };
+#pragma endregion
+
+private: bool RC_isConnected, PSDR_isConnected;
+
+private: Void this_Load(Object^ sender, EventArgs ^e) {
+			 ForEachControlPair(Init())
+
+				 pinMap = gcnew PinMap;
+			 pairs = gcnew PortPairs(this);
+
+			 pairs->Init();
+			 Reset();
+			 if(!InitialCom0ComSetup())
+			 {
+				 MessageBox::Show("При инициализации программы произошел сбой.\r\n Попробуйте перезапустить программу с правами администратора.");
+			 }
+
+			 array<Object^>^ objectArray = this->serialPSDR->GetPortNames();
+			 comboBox1->Items->AddRange(objectArray);
+
+ 			 
+		 }
+
+private: System::Void button1_Click(System::Object^  sender, System::EventArgs^  e) {
+			 
+		 }
+
+private: bool checkListForOurPorts(String^ port1, String^ port2)
+		 {
+			 bool contais_portname=false;
+			 String^ node_name="";
+
+			 for each (TreeNode^ nodes in pairList->Nodes)
+			 {
+				 node_name = nodes->Name;
+				 System::String^ pair_of_ports="";
+				 for each (TreeNode^ n in nodes->Nodes)
+				 {
+					 pair_of_ports += n->ToString();
+				 }
+				 if (pair_of_ports->Contains(port1) && pair_of_ports->Contains(port2))
+				 {
+					 contais_portname=true;
+				 }
+				 else
+				 {
+					 if (pair_of_ports->Contains(port1) || pair_of_ports->Contains(port2))
+					 {
+						 pairs->RemovePair(node_name);
+						 Reset();
+					 }
+				 }
+			 }
+			 return contais_portname;
+		 }
+
+private: bool InitialCom0ComSetup(){
+			if (!SaveChanges())
+				return false;
+
+			if (checkListForOurPorts("COM98","COM99"))
+			{
+				return true;
+			}
+			String ^key;
+			try {key = pairs->AddPair();} catch(...){return false;};
+
+			Reset();
+
+			try {
+				pairList->SelectedNode = pairList->Nodes[key];
+			}
+			catch (Exception^ /*e*/) {
+				return false;
+			}
+
+			try
+			{
+				PortNameA->Text	=	"COM98";
+				PortNameB->Text	=	"COM99";
+				EmuBrA->Checked=true;
+				EmuBrB->Checked=true;
+				HiddenModeA->Checked=true;
+				HiddenModeB->Checked=true;
+				ExclusiveModeA->Checked=true;
+				ExclusiveModeB->Checked=true;
+
+				if (pairList->SelectedNode) {
+					pairs->ChangePair(pairList->SelectedNode->Name, GetChanges());
+					Reset();
+				}
+			}
+			catch (...)
+			{
+				return false;
+			};
+			
+
+			return true;
+		 };
+
+
+private: System::Void buttonConnect_Click(System::Object^  sender, System::EventArgs^  e) {
+			 serialRC->Close();
+			 serialRC->PortName=comboBox1->Text;
+			 try{serialRC->Open();} catch (...){};
+		 }
+
+private: System::Void timerOpenPorts_Tick(System::Object^  sender, System::EventArgs^  e) {
+			 if (!serialPSDR->IsOpen)
+			 {
+				 serialPSDR->Close();
+				 try{serialPSDR->Open();} catch (...){};
+			 }
+
+			 checkBoxPSDR->Checked=PSDR_isConnected;
+			 PSDR_isConnected=false;
+
+			 if (serialPSDR->IsOpen)
+			 {
+		 		 try {serialPSDR->WriteLine("ZZFA;");} catch(...){};
+			 }
+
+			 //пульт
+			 if ((!serialRC->IsOpen || serialRC->PortName!=comboBox1->Text || !RC_isConnected) && (this->WindowState != FormWindowState::Normal))
+			 {
+				 serialRC->Close();
+				 serialRC->PortName=comboBox1->Text;
+				 try{serialRC->Open();} catch (...){};
+				 label1->Text = " порт открыт";
+			 }
+
+			 checkBoxRC->Checked=RC_isConnected;
+			 RC_isConnected=false;
+
+			 if (serialRC->IsOpen)
+			 {
+				 label1->Text = " порт открыт";
+				 array<Byte,1>^ mess = gcnew array<Byte,1>(4);
+				 mess[0]=0xC9;
+				 mess[1]=0x00;
+				 mess[2]=0x00;
+				 mess[3]=0x03;
+				 try {serialRC->Write(mess,0,4);} catch(...){};
+			 }
+
+		 }
+
+private: System::Void timerReadRC_Tick(System::Object^  sender, System::EventArgs^  e) {
+			 if (!serialRC->IsOpen) {return;}
+
+			 int BTR = serialRC->BytesToRead;
+			 if (BTR==0) return;
+			 RC_isConnected=true;
+
+			 array<Byte,1>^ messages= gcnew array<Byte,1>(BTR);
+			 serialRC->Read(messages,0,BTR);
+
+			 textBox1->Text = Convert::ToString(messages[BTR-1]) + "\r\n" + textBox1->Text;
+		 }
+private: void show_hide_Form1(bool state){
+			 if (state)
+			 {
+				 this->Visible=false;
+				 //this->WindowState=FormWindowState::Minimized;
+			 }
+			 else
+			 {
+				 this->Visible=true;
+				 this->WindowState=FormWindowState::Normal;
+			 }
+		 }
+
+private: System::Void notifyIcon_MouseClick(System::Object^  sender, System::Windows::Forms::MouseEventArgs^  e) {
+			 show_hide_Form1(false);
+		 }
+private: System::Void Form1_SizeChanged(System::Object^  sender, System::EventArgs^  e) {
+
+			 if (this->WindowState == FormWindowState::Minimized)
+			 {
+				 show_hide_Form1(true);
+			 }
+			 else
+			 {
+				 show_hide_Form1(false);
+			 }
+
+		 }
+private: System::Void Form1_FormClosing(System::Object^  sender, System::Windows::Forms::FormClosingEventArgs^  e) {
+			 System::Windows::Forms::DialogResult diag_res = MessageBox::Show("Вы уверены что хотите завершить работу приложения TuneSDR.com?","Выход?",MessageBoxButtons::OKCancel);
+
+			 if (diag_res == System::Windows::Forms::DialogResult::Cancel)
+			 {
+				 e->Cancel=true;
+			 }
+			 else
+			 {
+				 serialPSDR->Close();
+				 serialRC->Close();
+			 }
+
+			 
+		 }
+private: System::Void button1_Click_1(System::Object^  sender, System::EventArgs^  e) {
+			 InitialCom0ComSetup();
+		 }
+
+};
 }
