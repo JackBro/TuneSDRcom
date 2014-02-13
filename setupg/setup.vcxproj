@@ -89,6 +89,7 @@
       <SubSystem>Windows</SubSystem>
       <EntryPointSymbol>main</EntryPointSymbol>
       <TargetMachine>MachineX86</TargetMachine>
+      <UACExecutionLevel>RequireAdministrator</UACExecutionLevel>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -118,6 +119,10 @@
     <ClCompile Include="exec.cpp" />
     <ClCompile Include="pinmap.cpp" />
     <ClCompile Include="portprms.cpp" />
+    <ClCompile Include="PowersdrAsker.cpp" />
+    <ClCompile Include="PowersdrButtonStates.cpp" />
+    <ClCompile Include="PowersdrToPultProvider.cpp" />
+    <ClCompile Include="PultToPowersdrProvider.cpp" />
     <ClCompile Include="setup.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
@@ -131,6 +136,10 @@
     </ClInclude>
     <ClInclude Include="pinmap.h" />
     <ClInclude Include="portprms.h" />
+    <ClInclude Include="PowersdrAsker.h" />
+    <ClInclude Include="PowersdrButtonStates.h" />
+    <ClInclude Include="PowersdrToPultProvider.h" />
+    <ClInclude Include="PultToPowersdrProvider.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="stdafx.h" />
   </ItemGroup>
