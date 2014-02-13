@@ -360,7 +360,6 @@ ShowUninstDetails show
 
       ; Put target cpu files there
       File "..\${cpu}\com0com.sys"
-      File /nonfatal "..\${cpu}\com0com.cat"
       File "..\${cpu}\setup.dll"
       File "..\${cpu}\setupc.exe"
 
@@ -390,7 +389,7 @@ Section "com0com" sec_com0com
   File "..\com0com.inf"
   File "..\cncport.inf"
   File "..\comport.inf"
-  File "..\setupg\Release\setupg.exe"
+  File "..\Release\setupg.exe"
 
   WriteUninstaller "uninstall.exe"
 

@@ -77,7 +77,7 @@ array<String ^> ^ExecCommand::ExecCommand(System::Windows::Forms::Control ^paren
                                  setupc->StartInfo->FileName,
                                  setupc->StartInfo->Arguments,
                                  e->Message);
-    MessageBox::Show(msg, "Error");
+   //MessageBox::Show(msg, "Error");
   }
 
   parent->Cursor = cursor;
