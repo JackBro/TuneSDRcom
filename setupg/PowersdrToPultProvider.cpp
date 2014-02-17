@@ -10,6 +10,8 @@ PowersdrToPultProvider::PowersdrToPultProvider(void)
 	LED=0x00;
 	SM0=0;
 
+	smMatrix = gcnew array<Byte,1>(261);
+	smMatrixActive = false;
 
 	MdPAmpBtnsChanged=true;
 }
@@ -31,30 +33,31 @@ bool PowersdrToPultProvider::ProvideAnswer(System::String^ answer)
 	if (answer->Length>14)
     if (answer[2]=='F' && answer[3]=='A'){
 		ZZFA(answer);
-		if (answer->Length>21)
-		{
-			return ProvideAnswer(answer->Remove(0,16));
-		}
+// 		if (answer->Length>21)
+// 		{
+// 			return ProvideAnswer(answer->Remove(0,16));
+// 		}
 		return true;
 	}
 
 	if (answer->Length>14)
 	if (answer[2]=='F' && answer[3]=='B'){
 		ZZFB(answer);
-		if (answer->Length>21)
-		{
-			return ProvideAnswer(answer->Remove(0,16));
-		}
+// 		if (answer->Length>21)
+// 		{
+// 			return ProvideAnswer(answer->Remove(0,16));
+// 		}
 		return true;
 	}
 
 	if (answer->Length>6) //7?
 	if (answer[2]=='S' && answer[3]=='M' && answer[4]=='0'){
 		SetSM0(answer);
-		if (answer->Length>7)
-		{
-			return ProvideAnswer(answer->Remove(0,6));
-		}
+		SendSmLed();
+// 		if (answer->Length>7)
+// 		{
+// 			return ProvideAnswer(answer->Remove(0,6));
+// 		}
 		return true;
 	}
 
@@ -562,8 +565,17 @@ void PowersdrToPultProvider::SetLED(int mode, int ptt){
 }
 
 void PowersdrToPultProvider::SetSM0(System::String^ answer){
-	int ti = (answer[5]-0x30)*100+(answer[6]-0x30)*100+(answer[7]-0x30);
-	SM0=(ti/2-38)/3.375;
+	int number = (answer[5]-0x30) * 100 + (answer[6]-0x30) * 10 + (answer[7]-0x30);
+	
+	if (!smMatrixActive)
+	{
+		SM0=(number/2-38)/3.375;
+	}
+	else
+	{
+		SM0=smMatrix[number];
+	}
+	
 }
 
 void PowersdrToPultProvider::SendRitXitSplit(System::String^ cmdName){
@@ -729,7 +741,7 @@ void PowersdrToPultProvider::SendFilterHigh(void){
 	PowerAnswer[PowerAnswerIterator]=0x01;
 	PowerAnswerIterator++;
 
-	if (PoBtnSt->FrequencyLeft>=0)
+	if (PoBtnSt->FrequencyRight>=0)
 	{
 		PowerAnswer[PowerAnswerIterator]=0x00;
 	}

@@ -22,6 +22,8 @@ public:
 	void SendDate(void);
 
 	array<Byte,1>^ PowerAnswer;
+	array<Byte,1>^ smMatrix;
+	bool smMatrixActive;
 	int PowerAnswerIterator;
 
 	int LED;

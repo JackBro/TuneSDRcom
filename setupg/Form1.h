@@ -262,6 +262,9 @@ private: System::Windows::Forms::Panel^  panelFreqAcc;
 private: System::Windows::Forms::Label^  label14;
 private: System::Windows::Forms::TrackBar^  trackAccel0;
 private: System::Windows::Forms::Label^  labelAccel0;
+private: System::Windows::Forms::ComboBox^  cbSmMatrix;
+private: System::Windows::Forms::Label^  label16;
+
 
 
 
@@ -347,6 +350,8 @@ private: System::Windows::Forms::Label^  labelAccel0;
 			this->timerPsdrAsker = (gcnew System::Windows::Forms::Timer(this->components));
 			this->tabControl1 = (gcnew System::Windows::Forms::TabControl());
 			this->tabPage1 = (gcnew System::Windows::Forms::TabPage());
+			this->label16 = (gcnew System::Windows::Forms::Label());
+			this->cbSmMatrix = (gcnew System::Windows::Forms::ComboBox());
 			this->label2 = (gcnew System::Windows::Forms::Label());
 			this->cbMinOnStart = (gcnew System::Windows::Forms::CheckBox());
 			this->cbMinToTray = (gcnew System::Windows::Forms::CheckBox());
@@ -731,6 +736,7 @@ private: System::Windows::Forms::Label^  labelAccel0;
 			this->cbPortName->FormattingEnabled = true;
 			resources->ApplyResources(this->cbPortName, L"cbPortName");
 			this->cbPortName->Name = L"cbPortName";
+			this->cbPortName->Click += gcnew System::EventHandler(this, &Form1::cbPortName_Click);
 			// 
 			// serialRC
 			// 
@@ -791,7 +797,7 @@ private: System::Windows::Forms::Label^  labelAccel0;
 			// 
 			// timerPsdrAsker
 			// 
-			this->timerPsdrAsker->Interval = 300;
+			this->timerPsdrAsker->Interval = 111;
 			this->timerPsdrAsker->Tick += gcnew System::EventHandler(this, &Form1::timerPsdrAsker_Tick);
 			// 
 			// tabControl1
@@ -808,6 +814,8 @@ private: System::Windows::Forms::Label^  labelAccel0;
 			// tabPage1
 			// 
 			this->tabPage1->BackColor = System::Drawing::Color::WhiteSmoke;
+			this->tabPage1->Controls->Add(this->label16);
+			this->tabPage1->Controls->Add(this->cbSmMatrix);
 			this->tabPage1->Controls->Add(this->label2);
 			this->tabPage1->Controls->Add(this->cbMinOnStart);
 			this->tabPage1->Controls->Add(this->cbMinToTray);
@@ -818,6 +826,19 @@ private: System::Windows::Forms::Label^  labelAccel0;
 			this->tabPage1->Controls->Add(this->cbPortName);
 			resources->ApplyResources(this->tabPage1, L"tabPage1");
 			this->tabPage1->Name = L"tabPage1";
+			// 
+			// label16
+			// 
+			resources->ApplyResources(this->label16, L"label16");
+			this->label16->Name = L"label16";
+			// 
+			// cbSmMatrix
+			// 
+			this->cbSmMatrix->DropDownStyle = System::Windows::Forms::ComboBoxStyle::DropDownList;
+			this->cbSmMatrix->FormattingEnabled = true;
+			resources->ApplyResources(this->cbSmMatrix, L"cbSmMatrix");
+			this->cbSmMatrix->Name = L"cbSmMatrix";
+			this->cbSmMatrix->SelectedIndexChanged += gcnew System::EventHandler(this, &Form1::cbSmMatrix_SelectedIndexChanged);
 			// 
 			// label2
 			// 
@@ -1732,6 +1753,8 @@ private: int com0comPair;
 private: array<System::String^,1>^ AccelerationSteps;
 private: int pttOld;
 
+List<String^> sm_paths;
+
 private: PultToPowersdrProvider PuPoProvider;
 private: PowersdrToPultProvider PoPuProvider;
 private: PowersdrAsker PowerAsker;
@@ -1757,18 +1780,20 @@ private: void WriteSettings(void){
 				 bw->Write(Convert::ToInt32(numericFilterStep->Value));
 				 bw->Write(Convert::ToInt32(numericRitXit->Value));
 
-				 bw->Write(Convert::ToInt32(trackAccel0->Value));
-				 bw->Write(Convert::ToInt32(trackAccel1->Value));
-				 bw->Write(Convert::ToInt32(trackAccel2->Value));
-				 bw->Write(Convert::ToInt32(trackAccel3->Value));
-				 bw->Write(Convert::ToInt32(trackAccel4->Value));
-				 bw->Write(Convert::ToInt32(trackAccel5->Value));
+				 bw->Write( Convert::ToInt32(trackAccel0->Value) );
+				 bw->Write( Convert::ToInt32(trackAccel1->Value) );
+				 bw->Write( Convert::ToInt32(trackAccel2->Value) );
+				 bw->Write( Convert::ToInt32(trackAccel3->Value) );
+				 bw->Write( Convert::ToInt32(trackAccel4->Value) );
+				 bw->Write( Convert::ToInt32(trackAccel5->Value) );
 
 				 bw->Write(tbF_first->Text);
 				 bw->Write(tbF_second->Text);
 
 				 bw->Write(PuPoProvider.Acceleration);
 				 bw->Write(cbUseFreqAcc->Checked);
+
+				 bw->Write(cbSmMatrix->Text);
 
 				 bw->Close();
 
@@ -1820,6 +1845,8 @@ private: void ReadSettings(void){
 				 PuPoProvider.Acceleration  = br->ReadBoolean();
 				 cbUseFreqAcc->Checked		= br->ReadBoolean();
 				 cbUseFreqAcc_CheckedChanged(this, gcnew EventArgs());
+
+				 cbSmMatrix->Text			= br->ReadString();
 			 }
 			 catch (...)
 			 {
@@ -1891,8 +1918,15 @@ private: Void this_Load(Object^ sender, EventArgs ^e) {
 
 			array<Object^>^ objectArray = this->serialPSDR->GetPortNames();
 			cbPortName->Items->AddRange(objectArray);
-			cbPortName->Items->Remove("COM98");
-			cbPortName->Items->Remove("COM99");
+			cbPortName->Items->Remove(POWERSDR_IN_PORT);
+			cbPortName->Items->Remove(POWERSDR_OUT_PORT);
+
+			sm_paths.AddRange(Directory::GetFiles(System::IO::Path::GetDirectoryName(Application::ExecutablePath)+"\\SM", "*.tsm"));
+
+			for each (String^ path in sm_paths)
+			{
+				cbSmMatrix->Items->Add(/*(*/System::IO::Path::GetFileNameWithoutExtension(path)/*)->Replace("_"," ")*/);
+			}
 
 			ReadSettings();
 
@@ -1931,7 +1965,9 @@ private: Void this_Load(Object^ sender, EventArgs ^e) {
 			trackAccel4_Scroll(sender,e);
 			trackAccel5_Scroll(sender,e);
 
-				  }
+			
+			
+}
 
 private: bool InitialCom0ComSetup(){
 					  if (!SaveChanges())
@@ -2125,7 +2161,8 @@ private: System::Void timerReadRC_Tick(System::Object^  sender, System::EventArg
 			 
 			 try
 			 {
-			 	 serialPSDR->Write(PuPoProvider.PowersdrCmds->ToString()+"ZZFA;ZZFB;ZZSM0;");
+			 	 serialPSDR->Write(PuPoProvider.PowersdrCmds->ToString()+"ZZFA;ZZFB;");
+				 
 			 }
 			 catch (...){};
 			 PuPoProvider.PowersdrCmds->Clear();
@@ -2174,7 +2211,12 @@ private: System::Void timerReadPSDR_Tick(System::Object^  sender, System::EventA
 private: System::Void timerPsdrAsker_Tick(System::Object^  sender, System::EventArgs^  e) {
 			if (serialPSDR->IsOpen)
 			{
-				try { serialPSDR->Write(PowerAsker.GetQuestion()); } catch(...) {};
+				try 
+				{
+					serialPSDR->Write("ZZSM0;");
+					serialPSDR->Write(PowerAsker.GetQuestion()); 
+					//MessageBeep(1);
+				} catch(...) {};
 			}
 		}
 #pragma endregion
@@ -2268,7 +2310,7 @@ private: System::Void trackAccel5_Scroll(System::Object^  sender, System::EventA
 			 labelAccel5->Text = AccelerationSteps[trackAccel5->Value];
 		 }
 private: System::Void BtnAccelDefaults_Click(System::Object^  sender, System::EventArgs^  e) {
-			 trackAccel1->Value = 0;
+			 trackAccel0->Value = 0;
 			 trackAccel1->Value = 1;
 			 trackAccel2->Value = 1;
 			 trackAccel3->Value = 2;
@@ -2314,5 +2356,39 @@ private: System::Void cbUseFreqAcc_CheckedChanged(System::Object^  sender, Syste
 			 PuPoProvider.AccMode	=	cbUseFreqAcc->Checked;
 		 }
 
+private: System::Void cbPortName_Click(System::Object^  sender, System::EventArgs^  e) {
+			 cbPortName->Items->Clear();
+			 array<Object^>^ objectArray = this->serialPSDR->GetPortNames();
+			 for (int i=0; i<objectArray->Length; i++)
+			 {
+				 if (objectArray[i]->ToString() != POWERSDR_IN_PORT && objectArray[i]->ToString() != POWERSDR_OUT_PORT)
+				 {
+					  cbPortName->Items->Add(objectArray[i]);
+				 }
+			 }
+
+		 }
+private: System::Void cbSmMatrix_SelectedIndexChanged(System::Object^  sender, System::EventArgs^  e) {
+			 StreamReader^ sr;
+
+			 try { sr = File::OpenText(sm_paths[cbSmMatrix->SelectedIndex]); } catch (...) {return;}
+
+			 try 
+			 {
+
+				for (int i=0; i<261; i++)
+				{
+					PoPuProvider.smMatrix[i]=Convert::ToByte(sr->ReadLine());
+				}
+				PoPuProvider.smMatrixActive=true;
+			 }
+			 catch (...)
+			 {
+				 MessageBox::Show("Не удалось прочитать файл коррекции S-метра, резервный режим будет использован.");
+				 PoPuProvider.smMatrixActive=false;
+			 }
+
+			 sr->Close();
+		 }
 };
 }
